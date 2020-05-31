@@ -1,13 +1,12 @@
 package launcher;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,8 +17,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.awt.Font;
 import java.awt.FontFormatException;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.font.FontRenderContext;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -59,12 +56,14 @@ public class Main{
     private static final float headerHeight = .1f;//percent of content area height
     private static final float buttonIndent = 1.5f;//indent from right side of screen
     private static final float playIndent = 4.5f;//indent from right side of screen
+    private static final float installWidth = 12f;//multiplier of height
     private static Tab selectedTab = Tab.PLAY;
     private static int[] dragging = null;
     private static JPanel panel = new JPanel();
     private static JFrame frame;
-    private static final String root = System.getenv("APPDATA")+"\\Thizzygaming Industries\\Launcher";
-    private static final String libraryRoot = System.getenv("APPDATA")+"\\Thizzygaming Industries\\Libraries";
+    private static final String name = "Thizzy'z Games";
+    private static final String root = System.getenv("APPDATA")+"\\"+name+"\\Launcher";
+    private static final String libraryRoot = System.getenv("APPDATA")+"\\"+name+"\\Libraries";
     private static final Font font = addFont("simplelibrary-high-resolution.ttf");
     private static final int OS_WINDOWS = 0;
     private static final int OS_SOLARIS = 1;
@@ -130,7 +129,7 @@ public class Main{
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }catch(IOException ex){}
         }
-        frame = new JFrame("Thizzygaming Industries Launcher "+VersionManager.currentVersion);
+        frame = new JFrame(name+" Launcher "+VersionManager.currentVersion);
         frame.setUndecorated(true);
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension screenSize = tk.getScreenSize();
@@ -140,9 +139,9 @@ public class Main{
         panel.setLayout(null);
         frame.setVisible(true);
         new Game(Tab.PLAY, "Planetary Protector", "Defend the earth against otherworldly attackers!", "https://www.dropbox.com/s/capgobag47srs17/versions.txt?dl=1", "https://www.dropbox.com/s/cv045rh295rjubk/libraries.txt?dl=1");
-        new Game(Tab.PLAY, "Delubrian Invaders", "Explore and defend the galaxy!", "https://www.dropbox.com/s/17xbr20cq7m95oi/versions.txt?dl=1", "https://www.dropbox.com/s/t1dirgsm8ukg2cu/libraries.txt?dl=1");
         new Game(Tab.PLAY, "Pizza", "Make Pizza!", "https://www.dropbox.com/s/vfj58y5swhmcodj/versions.txt?dl=1", "https://www.dropbox.com/s/j9t64xx9c3y971b/libraries.txt?dl=1");
         new Game(Tab.PLAY, "Amazing Machine", "Find your way through randomly generated mazes!", "https://www.dropbox.com/s/c4yj9a8ady6zmgw/versions.txt?dl=1", "https://www.dropbox.com/s/lwzts9tcxriqkj2/libraries.txt?dl=1");
+        new Game(Tab.PLAY, "Delubrian Invaders", "Explore and defend the galaxy!", "https://www.dropbox.com/s/17xbr20cq7m95oi/versions.txt?dl=1", "https://www.dropbox.com/s/t1dirgsm8ukg2cu/libraries.txt?dl=1");
         new Game(Tab.TOOLS, "Geometry Printer", "Create and print geometric shapes!", "https://www.dropbox.com/s/3wu46gic6jwn2a2/versions.txt?dl=1", "https://www.dropbox.com/s/6dos3qgxkx8xlys/libraries.txt?dl=1");
         rebuild();
     }
@@ -391,7 +390,50 @@ public class Main{
         //</editor-fold>
         //</editor-fold>
         if(selectedTab==Tab.SETTINGS){
-            //TODO settings
+            JPanel installDir = new JPanel(){
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    g.setColor(getBackground());
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                    BufferedImage image;
+                    if(getForeground()==Color.white)image = getImage("icons/installMouseover.png");
+                    else image = getImage("icons/install.png");
+                    g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
+                    g.setColor(getForeground());
+                    int height = (int) (buttonSize*contentPanel.getHeight()*.9f);
+                    Font f = font.deriveFont((float)height);
+                    int width = (int) f.getStringBounds("Open Install Directory", new FontRenderContext(null, false, false)).getWidth();
+                    g.setFont(f);
+                    g.drawString("Open Install Directory", getWidth()/2-width/2, getHeight()/2+height/2);
+                }
+            };
+            contentPanel.add(installDir);
+            int size = (int) (contentPanel.getHeight()*buttonSize);
+            installDir.setBounds((int) (contentPanel.getWidth()-size*(playIndent+installWidth)), contentPanel.getHeight()/2-size/2, (int) (size*installWidth), size);
+            installDir.setBackground(Backgrounds.contentPanel);
+            installDir.setForeground(new Color(245,245,245));
+            installDir.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e){}
+                @Override
+                public void mousePressed(MouseEvent e){
+                    try{
+                        Desktop.getDesktop().open(new File(System.getenv("APPDATA")+"\\"+name));
+                    }catch(IOException ex){
+                    }
+                }
+                @Override
+                public void mouseReleased(MouseEvent e){}
+                @Override
+                public void mouseEntered(MouseEvent e){
+                    installDir.setForeground(Color.white);
+                }
+                @Override
+                public void mouseExited(MouseEvent e){
+                    installDir.setForeground(new Color(245,245,245));
+                }
+            });
         }else{
             //<editor-fold defaultstate="collapsed" desc="Game List">
             if(!selectedTab.games.isEmpty()){

@@ -24,6 +24,7 @@ public class VersionManager{
         addVersion("updater");//This is the updater, not the launcher; ignoring
         breakBackCompatability();
         addVersion("1.0");
+        addVersion("1.1");
         currentVersion = versions.get(versions.size()-1);
     }
     /**
