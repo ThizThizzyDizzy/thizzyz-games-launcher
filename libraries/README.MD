@@ -1,0 +1,1 @@
+All libraries are covered under their respective licenses
